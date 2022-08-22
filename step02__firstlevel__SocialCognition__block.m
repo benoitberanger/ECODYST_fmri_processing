@@ -84,6 +84,9 @@ Click
 3*emotion   - (intention + physical_1 + physical_2)
 (physical_1 + physical_2) - (emotion + intention)
 
+emotion - physical_2
+intention - physical_1
+
 }';
 
 contrast_T.names = {
@@ -97,6 +100,9 @@ contrast_T.names = {
 'INTENTION'
 'EMOTION'
 'PHYSICAL'
+
+'emotion - physical_2'
+'intention - physical_1'
 
 }';
 
@@ -112,6 +118,7 @@ contrast.values = [contrast_F.values contrast_T.values];
 contrast.types  = [contrast_F.types  contrast_T.types ];
 
 job_first_level_contrast(fspm,contrast,par);
+
 
 %%
 

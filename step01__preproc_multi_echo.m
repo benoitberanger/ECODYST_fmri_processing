@@ -5,9 +5,11 @@
 clc
 clear
 
+addpath('MB')
+
 main_dir = '/network/lustre/iss02/cenir/analyse/irm/users/benoit.beranger/ECODYST/nifti';
 
-e = exam(main_dir, 'ECODYST_PILOTE04'); % all subjects with multi-echo
+e = exam(main_dir, 'ECODYST_PILOTE06'); % all subjects with multi-echo
 
 
 %% Get files paths #matvol
@@ -17,7 +19,9 @@ e.addSerie('T1w$', 'anat_T1', 1 );
 e.getSerie('anat').addVolume('^v_.*nii','v',1);
 
 % Func
-run_list = {'MentalRotation', 'NBack', 'SocialCognition', 'SimpleMotor'};
+% run_list = {'MentalRotation', 'NBack', 'SocialCognition', 'SimpleMotor'};
+% run_list = {'Emotion'};
+run_list = {'SimpleMotor1', 'SimpleMotor2'};
 for r = 1 : length(run_list)
     run_name = run_list{r};
     e.addSerie([run_name           '$'], ['run_' run_name], 1);

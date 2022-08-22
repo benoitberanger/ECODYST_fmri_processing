@@ -2,21 +2,24 @@ clear
 clc
 
 load e
+clear par
 
-model_name = 'SimpleMotor2_block';
+model_name = 'SimpleMotor2_reg';
 
 dirStats = e.mkdir('glm',model_name);
 dirFunc  = get_parent_path( e.getSerie('run_SimpleMotor2').getVolume('s5wts').toJob() );
 dirFunc   = cellfun(@cellstr, dirFunc, 'UniformOutput', 0);
 
 onsetspath = '/network/lustre/iss02/cenir/analyse/irm/users/benoit.beranger/ECODYST/onsets';
-e.getSerie('run_SimpleMotor2').addStim(onsetspath, 'SimpleMotor_run02_SPM_block.mat', model_name)
-onsets = e.getSerie('run').getStim(model_name).toJob(0);
+e.getSerie('run_SimpleMotor2').addStim(onsetspath, 'SimpleMotor_run02_SPM_event.mat', model_name)
+onsets = e.getSerie('run_SimpleMotor2').getStim(model_name).toJob(0);
 
 
 %%
 
-clear par
+e.getSerie('run_SimpleMotor2').addStim(onsetspath, 'run02__R_IO1__reg.mat', 'reg')
+par.file_regressor = e.getSerie('run_SimpleMotor2').getStim('reg').toJob(1);
+
 par.file_reg = '^s5wts_.*nii';
 par.rp       = 1;
 par.rp_regex = '^multiple_regressors.txt';
@@ -72,16 +75,16 @@ par.delete_previous = 1;
 instr_rest   = [1 0 0 0];
 instr_action = [0 1 0 0];
 block_rest   = [0 0 1 0];
-block_action = [0 0 0 1];
+reg_action   = [0 0 0 1];
 
 contrast_T.values = {
     
 instr_rest
 instr_action
 block_rest
-block_action
+reg_action
 
-block_action - block_rest
+reg_action - block_rest
 
 }';
 
@@ -90,9 +93,9 @@ contrast_T.names = {
 'instr_rest'
 'instr_action'
 'block_rest'
-'block_action'
+'reg_action'
 
-'block_action - block_rest'
+'reg_action - block_rest'
 
 }';
 

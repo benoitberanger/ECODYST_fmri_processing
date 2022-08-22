@@ -99,6 +99,9 @@ Click
 3*emotion__Answer   - (intention__Answer + physical_1__Answer + physical_2__Answer)
 (physical_1__Answer + physical_2__Answer) - (emotion__Answer + intention__Answer)
 
+emotion__Answer - physical_2__Answer
+intention__Answer - physical_1__Answer
+
 }';
 
 contrast_T.names = {
@@ -119,6 +122,9 @@ contrast_T.names = {
 'INTENTION_Answer'
 'EMOTION_Answer'
 'PHYSICAL_Answer'
+
+'emotion__Answer - physical_2__Answer'
+'intention__Answer - physical_1__Answer'
 
 }';
 
