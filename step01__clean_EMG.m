@@ -89,24 +89,24 @@ for iSubj = 1 : length(hdr_file)
         
         %% Save final results for faster loading
         
-        %         farm_export_mat( data ) % MATLAB ( .mat )
+        farm_export_mat( data ) % MATLAB ( .mat )
         
         
         %% Print figures
         
-        %         figH = farm_plot_FFT(data, emg_channel_regex,       'raw', [30 250]   );  farm_print_figure( data, figH ); close(figH);
-        %         figH = farm_plot_FFT(data, emg_channel_regex, 'pca_clean', [30 250]   );  farm_print_figure( data, figH ); close(figH);
-        %
-        %         figH = farm_plot_FFT(data,         'ACC',       'raw', ACC_bandwidth, 2); farm_print_figure( data, figH ); close(figH);
+        figH = farm_plot_FFT(data, emg_channel_regex,       'raw', [30 250]   );  farm_print_figure( data, figH ); close(figH);
+        figH = farm_plot_FFT(data, emg_channel_regex, 'pca_clean', [30 250]   );  farm_print_figure( data, figH ); close(figH);
+        
+        figH = farm_plot_FFT(data,         'ACC',       'raw', ACC_bandwidth, 2); farm_print_figure( data, figH ); close(figH);
         
         
         %% Generate regressors
         
-        %         for chan = 1 : length(emg_channel_name)
-        %             ts      = farm_get_timeseries( data, emg_channel_name{chan}, 'pca_clean', +[30 250] ); % (2 x nSamples)
-        %             reginfo = farm_emg_regressor ( data, ts, emg_channel_name{chan} );
-        %             farm_save_regressor( data, reginfo)
-        %         end
+        for chan = 1 : length(emg_channel_name)
+            ts      = farm_get_timeseries( data, emg_channel_name{chan}, 'pca_clean', +[30 250] ); % (2 x nSamples)
+            reginfo = farm_emg_regressor ( data, ts, emg_channel_name{chan} );
+            farm_save_regressor( data, reginfo)
+        end
         
         
         %% Time-Frequency Analysis
@@ -114,8 +114,7 @@ for iSubj = 1 : length(hdr_file)
         cfg_TFA = [];
         cfg_TFA.emg_regex = emg_channel_regex;
         cfg_TFA.acc_regex = 'ACC';
-        cfg_TFA.foilim    = ACC_bandwidth;
-        cfg_TFA.minmax_foi = ACC_bandwidth;
+        cfg_TFA.foi       = ACC_bandwidth;
         TFA = farm_time_frequency_analysis_emg_acc( data, cfg_TFA );
         figH = farm_plot_TFA( data, TFA ); farm_print_figure( data, figH ); close(figH);
         
@@ -125,11 +124,10 @@ for iSubj = 1 : length(hdr_file)
         cfg_coh = [];
         cfg_coh.emg_regex = emg_channel_regex;
         cfg_coh.acc_regex = 'ACC';
-        cfg_coh.foilim    = ACC_bandwidth;
-        cfg_coh.minmax_foi = ACC_bandwidth;
+        cfg_coh.foi    = ACC_bandwidth;
+        cfg_coh.foi = ACC_bandwidth;
         coh = farm_coherence_analysis_emg_acc( data, cfg_coh );
-        % ft_connectivityplot([], coh);
-        figH = farm_plot_coherence( data, coh ); farm_print_figure( data, figH ); close(figH);
+        figH = farm_plot_coherence( data, coh, cfg_coh ); farm_print_figure( data, figH ); close(figH);
         
         side = {'L', 'R'};
         
@@ -139,10 +137,9 @@ for iSubj = 1 : length(hdr_file)
             LR = char(s);
             
             cfg_select_emg = [];
-            cfg_select_emg.emg_regex = sprintf('%s_(%s)',LR,emg_channel_regex);
+            cfg_select_emg.emg_regex = sprintf('%s_%s',LR,emg_channel_regex);
             cfg_select_emg.acc_regex = sprintf('%s_ACC' ,LR                  );
-            cfg_select_emg.foilim    = ACC_bandwidth;
-            cfg_select_emg.minmax_foi = ACC_bandwidth;
+            cfg_select_emg.foi       = ACC_bandwidth;
             best_emg = farm_select_best_emg_using_acc_coherence( data, cfg_select_emg );
             
             
