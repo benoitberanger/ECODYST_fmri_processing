@@ -10,7 +10,7 @@ dirFunc  = get_parent_path( e.getSerie('run_SocialCognition').getVolume('s5wts')
 dirFunc   = cellfun(@cellstr, dirFunc, 'UniformOutput', 0);
 
 onsetspath = '/network/lustre/iss02/cenir/analyse/irm/users/benoit.beranger/ECODYST/onsets';
-e.getSerie('run_SocialCognition').addStim(onsetspath, 'SocialCognition_run01_SPM_event.mat', model_name)
+e.getSerie('run_SocialCognition').addStim(onsetspath, 'SocialCognition_run0\d_SPM_event.mat$', model_name)
 onsets = e.getSerie('run').getStim(model_name).toJob(0);
 
 clear par

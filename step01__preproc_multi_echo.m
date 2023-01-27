@@ -9,7 +9,7 @@ addpath('MB')
 
 main_dir = '/network/lustre/iss02/cenir/analyse/irm/users/benoit.beranger/ECODYST/nifti';
 
-e = exam(main_dir, 'ECODYST_PILOTE06'); % all subjects with multi-echo
+e = exam(main_dir, 'ECODYST_\w\w_\d\d\d_S1'); % all subjects with multi-echo
 
 
 %% Get files paths #matvol
@@ -21,7 +21,11 @@ e.getSerie('anat').addVolume('^v_.*nii','v',1);
 % Func
 % run_list = {'MentalRotation', 'NBack', 'SocialCognition', 'SimpleMotor'};
 % run_list = {'Emotion'};
-run_list = {'SimpleMotor1', 'SimpleMotor2'};
+% run_list = {'SimpleMotor1', 'SimpleMotor2'};
+% run_list = {'Emotion', 'Fluency', 'SocialCognition'};
+% run_list = {'Fluency', 'Fluency_repos_vocal','Fluency_mental', 'Fluency_mental_repos'};
+run_list = {'MentalRotation', 'SocialCognition', 'NBack', 'Fluency', 'SimpleMotor', 'Emotion'};
+
 for r = 1 : length(run_list)
     run_name = run_list{r};
     e.addSerie([run_name           '$'], ['run_' run_name], 1);
@@ -31,19 +35,26 @@ end
 e.getSerie('run').addVolume('^v_.*nii$',   'v', 3);
 e.getSerie('phy').addPhysio(     'dcm$', 'dcm', 1);
 
-% ep2d_se : distortion correction
-e.addSerie('ep2d_se_PA_SBRef$'    , 'se_forward', 1);
-e.addSerie('ep2d_se_PAblip_SBRef$', 'se_reverse', 1);
-e.getSerie('se').addVolume('^v_.*nii$', 'v', 1);
+% distortion correction : use SBRef
+for r = 1 : length(run_list)
+    run_name = run_list{r};
+    e.addSerie([run_name       '_SBRef$'], ['sbref_' run_name '_forward'], 1);
+    e.addSerie([run_name '_revPE_SBRef$'], ['sbref_' run_name '_reverse'], 1);
+end
+e.getSerie('sbref').addVolume('^v_.*e1.nii$', 'v', 1);
 
 e.reorderSeries('name');
-
-e.explore
 
 
 %% Cluster ?
 
 CLUSTER = 0;
+
+
+%% check if all echos have the same number of volumes
+% this step takes time the first time you run it, but after its neglectable
+
+e.getSerie('run').getVolume('v').check_multiecho_Nvol()
 
 
 %% segment cat12 #CAT12->SPM12
@@ -111,8 +122,9 @@ par.seperate = 1;
 par.write_nifti = 1;
 
 par.blocks  = {'tshift', 'volreg', 'blip'};
-par.blip.forward = e.getSerie('se_forward').getVolume();
-par.blip.reverse = e.getSerie('se_reverse').getVolume();
+par.blip.forward = e.getSerie('sbref_.*_forward').getVolume();
+par.blip.reverse = e.getSerie('sbref_.*_reverse').getVolume();
+% par.blocks  = {'tshift', 'volreg'};
 
 afni_prefix = char(par.blocks); % {'despike', 'tshift', 'volreg'}
 afni_prefix = afni_prefix(:,1)';
@@ -170,10 +182,9 @@ par.sge_nb_coeur = 2;           % I dont't know why, but 2 CPU increase the "sta
 tedana_subdir = ['tedana0011_' afni_prefix];
 job_tedana_0011( meinfo, afni_prefix, tedana_subdir, ['bet_Tmean_' afni_prefix 'e1_mask.nii.gz'], par );
 
-
 % Checkpoint & unzip
 par.jobname = 'unzip_and_keep__tedana';
-e.getSerie('run').getVolume('ts_OC').removeEmpty().unzip_and_keep(par)
+e.getSerie('run').getVolume('^ts_OC').removeEmpty().unzip_and_keep(par)
 
 
 %% Coregister TEDANA outputs to Anat #SPM12
@@ -191,7 +202,7 @@ par.redo  = 0;
 par.type  = 'estimate';
 
 src = e.getSerie('run').removeEmpty().getVolume(['^bet_Tmean_' afni_prefix 'e1$']);
-oth = e.getSerie('run').removeEmpty().getVolume('(^ts_OC)|(^dn_ts_OC)');
+oth = e.getSerie('run').removeEmpty().getVolume('^ts_OC');
 ref = e.getSerie('run').removeEmpty().getExam.getSerie('anat_T1').getVolume('^p0');
 
 par.jobname = 'spm_coreg_epi2anat';
@@ -211,7 +222,7 @@ else
 end
 par.redo = 0;
 par.vox = [2.5 2.5 2.5]; % IMPORTANT keep original EPI voxel size
-img = e.getSerie('run').getVolume('(^ts_OC)|(^dn_ts_OC)').removeEmpty();
+img = e.getSerie('run').getVolume('^ts_OC').removeEmpty();
 y   = img.getExam.getSerie('anat_T1').getVolume('^y');
 par.jobname = 'spm_normalize_epi';
 job_apply_normalize(y,img,par);

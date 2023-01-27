@@ -3,14 +3,14 @@ clc
 
 load e
 
-model_name = 'SocialCognition_block';
+model_name = 'Fluency_block';
 
 dirStats = e.mkdir('glm',model_name);
-dirFunc  = get_parent_path( e.getSerie('run_SocialCognition').getVolume('s5wts').toJob() );
+dirFunc  = get_parent_path( e.getSerie('run_Fluency').getVolume('s5wts').toJob() );
 dirFunc   = cellfun(@cellstr, dirFunc, 'UniformOutput', 0);
 
 onsetspath = '/network/lustre/iss02/cenir/analyse/irm/users/benoit.beranger/ECODYST/onsets';
-e.getSerie('run_SocialCognition').addStim(onsetspath, 'SocialCognition_run0\d_SPM_block.mat$', model_name)
+e.getSerie('run_Fluency').addStim(onsetspath, 'Fluency_run0\d_SPM_block.mat$', model_name)
 onsets = e.getSerie('run').getStim(model_name).toJob(0);
 
 clear par
@@ -66,43 +66,47 @@ par.display         = 0;
 par.delete_previous = 1;
 
 
-intention  = [1 0 0 0 0];
-emotion    = [0 1 0 0 0];
-physical_1 = [0 0 1 0 0];
-physical_2 = [0 0 0 1 0];
-Click      = [0 0 0 0 1];
+instr_rest                    = [1 0 0   0 0 0 0];
+instr_action                  = [0 1 0   0 0 0 0];
+block_rest                    = [0 0 1   0 0 0 0];
+block_action_semantic_animals = [0 0 0   1 0 0 0];
+block_action_semantic_cloths  = [0 0 0   0 1 0 0];
+block_action_phonemic_F       = [0 0 0   0 0 1 0];
+block_action_phonemic_C       = [0 0 0   0 0 0 1];
+
+action2_semantic = block_action_semantic_animals + block_action_semantic_cloths;
+action2_phonemic = block_action_phonemic_F + block_action_phonemic_C;
+action4          = action2_semantic + action2_phonemic;
 
 contrast_T.values = {
-    
-intention
-emotion
-physical_1
-physical_2
-Click
 
-3*intention - (emotion   + physical_1 + physical_2)
-3*emotion   - (intention + physical_1 + physical_2)
-(physical_1 + physical_2) - (emotion + intention)
+instr_rest
+instr_action
+block_rest
+block_action_semantic_animals
+block_action_semantic_cloths
+block_action_phonemic_F
+block_action_phonemic_C
 
-emotion - physical_2
-intention - physical_1
+action4 - 4*block_rest
+action2_semantic - action2_phonemic
+action2_phonemic - action2_semantic
 
 }';
 
 contrast_T.names = {
     
-'intention'
-'emotion'
-'physical_1'
-'physical_2'
-'Click'
+'instr_rest'
+'instr_action'
+'block_rest'
+'block_action_semantic_animals'
+'block_action_semantic_cloths'
+'block_action_phonemic_F'
+'block_action_phonemic_C'
 
-'INTENTION'
-'EMOTION'
-'PHYSICAL'
-
-'emotion - physical_2'
-'intention - physical_1'
+'action4 - 4*block_rest'
+'action2_semantic - action2_phonemic'
+'action2_phonemic - action2_semantic'
 
 }';
 
@@ -110,7 +114,7 @@ contrast_T.names = {
 contrast_T.types = cat(1,repmat({'T'},[1 length(contrast_T.names)]));
 
 contrast_F.names  = {'F-all'};
-contrast_F.values = {eye(5)};
+contrast_F.values = {eye(7)};
 contrast_F.types  = cat(1,repmat({'F'},[1 length(contrast_F.names)]));
 
 contrast.names  = [contrast_F.names  contrast_T.names ];
