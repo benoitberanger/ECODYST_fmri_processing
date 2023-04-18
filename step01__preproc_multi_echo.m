@@ -318,7 +318,7 @@ cfg.rp_order     = 24;   % can be 6, 12, 24
 cfg.rp_method    = 'FD'; % 'MAXVAL' / 'FD' / 'DVARS'
 
 cfg.display  = 0;
-cfg.redo     = 1;
+cfg.redo     = 0;
 cfg.walltime = '04:00:00';
 cfg.mem      = '4G';
 
